@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PulseTeam</title>
+    <style>
+      :root{--bg:#07111f;--panel:#0f172a;--line:#203044;--text:#e5eefb;--muted:#93a4bd;--accent:#7dd3fc;--danger:#f87171}
+      *{box-sizing:border-box}
+      body{margin:0;font-family:Inter,Arial,sans-serif;background:linear-gradient(180deg,#07111f,#0b1324);color:var(--text)}
+      .wrap{max-width:1280px;margin:0 auto;padding:32px}
+      .header{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:32px}
+      .badge{display:inline-flex;padding:6px 10px;border-radius:999px;background:#132338;color:var(--accent);font-size:12px}
+      .role-switch{display:flex;gap:8px;align-items:center}
+      .role-btn{padding:6px 12px;border-radius:6px;background:#1f2937;border:1px solid #374151;color:var(--text);cursor:pointer;font-size:12px}
+      .role-btn.active{background:var(--accent);color:#000;border-color:var(--accent)}
+      .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:32px}
+      .card{background:rgba(15,23,42,.88);border:1px solid var(--line);border-radius:18px;padding:20px;box-shadow:0 16px 40px rgba(0,0,0,.2)}
+      .kpi{font-size:38px;font-weight:800;margin:10px 0}
+      .muted{color:var(--muted);font-size:14px}
+      .section{display:grid;grid-template-columns:2fr 1fr;gap:16px;margin-bottom:32px}
+      table{width:100%;border-collapse:collapse}
+      td,th{padding:12px;border-bottom:1px solid #1f2c3d;text-align:left;font-size:14px}
+      th{font-weight:600;color:var(--accent)}
+      .risk-low{color:#86efac}
+      .risk-moderate{color:#fbbf24}
+      .risk-high{color:var(--danger)}
+      .loading{color:var(--muted);font-size:12px}
+      @media(max-width:900px){.grid,.section{grid-template-columns:1fr}}
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="header">
+        <div>
+          <div class="badge">PulseTeam MVP</div>
+          <h1 style="margin:12px 0 8px">Remote Team Monitoring & Wellness</h1>
+          <div class="muted">Privacy-first analytics for distributed teams</div>
+        </div>
+        <div class="role-switch">
+          <span class="muted">Role:</span>
+          <button class="role-btn active" onclick="switchRole('employee')">Employee</button>
+          <button class="role-btn" onclick="switchRole('manager')">Manager</button>
+          <button class="role-btn" onclick="switchRole('admin')">Admin</button>
+        </div>
+      </div>
+
+      <div class="grid">
+        <div class="card"><div class="muted">Wellness</div><div class="kpi" id="wellness">-</div><div>Team focus and load average</div></div>
+        <div class="card"><div class="muted">Teams</div><div class="kpi" id="teams">-</div><div>Active teams in view</div></div>
+        <div class="card"><div class="muted">Nudges</div><div class="kpi" id="nudges">-</div><div>Wellness reminders sent</div></div>
+        <div class="card"><div class="muted">At Risk</div><div class="kpi" id="risk">-</div><div style="color:var(--danger)">High-risk teams</div></div>
+      </div>
+
+      <div class="section">
+        <div class="card">
+          <h2 style="margin-top:0">Team Health Overview</h2>
+          <div id="teams-table" class="loading">Loading...</div>
+        </div>
+        <div style="display:grid;gap:16px">
+          <div class="card">
+            <h2 style="margin-top:0">Privacy</h2>
+            <ul class="muted" style="margin:0;padding-left:16px">
+              <li>No message content</li>
+              <li>No keystroke logs</li>
+              <li>Aggregate by team</li>
+              <li>Opt-in nudges</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h2 style="margin-top:0">Integrations</h2>
+            <div class="muted">Slack: coming soon</div>
+            <div class="muted">Google: coming soon</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      let currentRole = 'employee';
+
+      async function loadData() {
+        try {
+          const summary = await fetch('http://localhost:4000/api/summary', {
+            headers: { 'x-role': currentRole, 'x-user-id': 'u1' }
+          }).then(r => r.json());
+
+          document.getElementById('wellness').textContent = summary.averageWellness || '-';
+          document.getElementById('teams').textContent = summary.teams || '-';
+          document.getElementById('nudges').textContent = summary.nudges || '-';
+          document.getElementById('risk').textContent = summary.highRiskTeams || '-';
+
+          const health = await fetch('http://localhost:4000/api/team-health', {
+            headers: { 'x-role': currentRole, 'x-user-id': 'u1' }
+          }).then(r => r.json());
+
+          if (!health.canView && currentRole === 'employee') {
+            document.getElementById('teams-table').innerHTML = '<div class="muted">Employee view: aggregate data only</div>';
+            return;
+          }
+
+          let html = '<table><thead><tr><th>Team</th><th>Risk</th><th>Note</th></tr></thead><tbody>';
+          health.teams.forEach(t => {
+            const riskClass = t.riskScore < 30 ? 'risk-low' : t.riskScore < 60 ? 'risk-moderate' : 'risk-high';
+            const riskLabel = t.riskScore < 30 ? 'Low' : t.riskScore < 60 ? 'Moderate' : 'High';
+            html += `<tr><td>${t.name}</td><td class="${riskClass}">${riskLabel}</td><td>${t.notes[0] || '-'}</td></tr>`;
+          });
+          html += '</tbody></table>';
+          document.getElementById('teams-table').innerHTML = html;
+        } catch (e) {
+          document.getElementById('teams-table').innerHTML = '<div class="loading">Backend not running. Try: node backend/src/server.js</div>';
+        }
+      }
+
+      function switchRole(role) {
+        currentRole = role;
+        document.querySelectorAll('.role-btn').forEach(b => b.classList.remove('active'));
+        event.target.classList.add('active');
+        loadData();
+      }
+
+      loadData();
+      setInterval(loadData, 5000);
+    </script>
+  </body>
+</html>

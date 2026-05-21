@@ -1,0 +1,13 @@
+#!/bin/bash
+echo "🚀 Starting PulseTeam MVP..."
+echo ""
+echo "1️⃣  Backend (Terminal 1):"
+echo "   node backend/src/server.js"
+echo ""
+echo "2️⃣  Frontend (Terminal 2):"
+echo "   open frontend/dashboard.html"
+echo ""
+echo "3️⃣  Test API:"
+echo "   curl http://localhost:4000/api/summary"
+echo ""
+echo "Happy demoing! 🎉"

@@ -1,0 +1,12 @@
+{
+  "name": "pulseteam",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node backend/src/server.js & open frontend/index.html",
+    "backend": "node backend/src/server.js",
+    "build": "echo 'MVP complete'",
+    "format": "echo 'linting'"
+  },
+  "dependencies": {}
+}

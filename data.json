@@ -1,0 +1,61 @@
+{
+  "users": [
+    {
+      "id": "u1",
+      "name": "Alice",
+      "role": "employee",
+      "teamId": "alpha"
+    },
+    {
+      "id": "u2",
+      "name": "Bob",
+      "role": "manager",
+      "teamId": "alpha"
+    },
+    {
+      "id": "u3",
+      "name": "Carol",
+      "role": "admin"
+    }
+  ],
+  "teams": [
+    {
+      "id": "alpha",
+      "name": "Alpha",
+      "riskScore": 22,
+      "notes": [
+        "Stable workload"
+      ]
+    },
+    {
+      "id": "beta",
+      "name": "Beta",
+      "riskScore": 68,
+      "notes": [
+        "High after-hours activity"
+      ]
+    },
+    {
+      "id": "gamma",
+      "name": "Gamma",
+      "riskScore": 31,
+      "notes": [
+        "Survey response healthy"
+      ]
+    }
+  ],
+  "nudges": [
+    {
+      "id": "n1",
+      "teamId": "alpha",
+      "text": "Take a meeting-free afternoon",
+      "sent": "2026-05-20"
+    },
+    {
+      "id": "n2",
+      "teamId": "beta",
+      "text": "Block focus time",
+      "sent": "2026-05-20"
+    }
+  ]
+}

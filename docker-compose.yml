@@ -1,0 +1,4 @@
+services:
+  app:
+    image: node:22
+    command: ["bash", "-lc", "echo PulseTeam dev environment"]
